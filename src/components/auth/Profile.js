@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Card, Col, Container, Form, Row, Table } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Profile = ({ setAuthCheck }) => {
 
@@ -29,7 +29,10 @@ const Profile = ({ setAuthCheck }) => {
                                 <a onClick={ handleUserLogout } href='#'>Logout</a>
                             </div>
                         </Card.Body>
-                    </Card>
+                        <Card.Footer>
+                            <Link to='/students'>Add Students</Link>
+                        </Card.Footer>
+                    </Card>                    
                 </Col>
             </Row>
         </Container>

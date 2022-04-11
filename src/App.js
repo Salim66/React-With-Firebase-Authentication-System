@@ -4,6 +4,7 @@ import Register from './components/auth/Register';
 import Profile from './components/auth/Profile';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
+import Student from './components/Student/Student';
 
 function App() {
 
@@ -29,6 +30,7 @@ function App() {
         <Route path='/' element={ <Login setAuthCheck={setAuthCheck} /> } />
         <Route path='/register' element={ <Register /> } />
         <Route path='/profile' element={ <AuthCheck><Profile setAuthCheck={setAuthCheck} /></AuthCheck> } />
+        <Route path='/students' element={ <AuthCheck><Student /></AuthCheck> } />
       </Routes>
     </>
   );
