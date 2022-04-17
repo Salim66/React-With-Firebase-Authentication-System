@@ -3,11 +3,13 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { Alert, Button, Card, CloseButton, Col, Container, Form, Row, Table } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { addDoc, collection, doc, getFirestore, onSnapshot, setDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { app } from '../../firebase';
 
 const Student = () => {
 
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     const [studentInput, setStudentInput] = useState({
         name : '',
@@ -15,6 +17,25 @@ const Student = () => {
         cell  : '',
         photo  : ''
     });
+
+    console.log(studentInput);
+
+    // Preveiw Image State
+    const [preview, setPreveiw] = useState('');
+
+    // Get File name 
+    const [file, setFile] = useState('');
+
+    // Loading Data Load
+    const [loading, setLoading] = useState(false);
+
+    // Handle image preview
+    let handleImagePreview = (e) => {
+        let file = e.target.files[0];
+        let imageURL = URL.createObjectURL(file);
+        setPreveiw(imageURL);
+        setFile(file);
+    }
 
 
     const [students, setStudents] = useState([]);
@@ -51,6 +72,30 @@ const Student = () => {
 
         }else {
 
+            let imageName = new Date().getTime() + file.name;
+            const storeRef = ref(storage, 'students/' + imageName);
+            const uploadImage = uploadBytesResumable(storeRef, file);
+
+            uploadImage.on("state_change", (snapshot) => {
+                setLoading(true);
+            }, (error) => {
+
+            }, () => {
+                getDownloadURL(uploadImage.snapshot.ref).then(filePath => {
+
+                       // automatically id add
+                        addDoc(collection(db, "students"), {
+                            name : studentInput.name,
+                            location : studentInput.location,
+                            cell : studentInput.cell,
+                            photo : filePath
+                        })
+
+                        setLoading(false);
+
+                })
+            })
+
             // manual id add
             // await setDoc(doc(db, "students", '1'), {
             //     name : studentInput.name,
@@ -59,13 +104,7 @@ const Student = () => {
             //     photo : studentInput.photo
             // })
 
-            // automatically id add
-            await addDoc(collection(db, "students"), {
-                name : studentInput.name,
-                location : studentInput.location,
-                cell : studentInput.cell,
-                photo : studentInput.photo
-            })
+         
 
             setAlert({
                 msg : 'Student added successfull :)',
@@ -81,6 +120,8 @@ const Student = () => {
             });
 
         }
+        e.target.reset();
+        setPreveiw('');
 
     }
 
@@ -131,7 +172,9 @@ const Student = () => {
                                 </div>
                                 <div className='my-3'>
                                     <Form.Label>Photo</Form.Label>
-                                    <Form.Control type='text' value={studentInput.photo} onChange={ e => setStudentInput({ ...studentInput, photo : e.target.value }) } />
+                                    <Form.Control type='file' onChange={ (e) => handleImagePreview(e) } />
+                                    <hr />
+                                    <img style={{ maxWidth: '100%' }} src={ preview } alt="" />
                                 </div>
                                 <div className='my-3'>
                                     <Button type='submit'>Add new</Button>
@@ -172,6 +215,10 @@ const Student = () => {
                                             </td>
                                         </tr>
                                         )
+                                    }
+
+                                    {
+                                        loading && <h4>Loading ....</h4>
                                     }
 
                                     
